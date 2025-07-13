@@ -1,0 +1,44 @@
+---
+variables:
+  PYTHON_VERSION: "3.12"
+  CHROME_VERSION: "131.0"
+  CI: "true"
+
+image: "python:${PYTHON_VERSION}"
+
+.dependencies: &dependencies
+  before_script:
+    - make install-virtual-environment
+    - make install-dependencies
+
+stages:
+  - static-analysis
+  - tests
+
+run-lint:
+  <<: *dependencies
+  stage: static-analysis
+  script:
+    - make lint
+
+run-format:
+  <<: *dependencies
+  stage: static-analysis
+  script:
+    - make format
+
+run-all-tests:
+  <<: *dependencies
+  stage: tests
+  script:
+    - make all-tests
+
+run-integration-tests:
+  <<: *dependencies
+  stage: tests
+  services:
+    - name: "localstack/localstack:${LOCALSTACK_VERSION}"
+      alias: localstack
+  script:
+    - make integration-setup
+    - make integration-tests
